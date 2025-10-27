@@ -10,6 +10,7 @@ from pathlib import Path
 
 import anyio
 from claude_agent_sdk import query, ClaudeAgentOptions
+from claude_agent_sdk.types import AssistantMessage, TextBlock
 
 from .config import AgentConfig, get_config
 from .tools import build_tool_configs, ToolRegistry
@@ -121,6 +122,27 @@ class WebBrowsingAgent:
         tools = [t["name"] for t in self.tool_configs]
         return f"WebBrowsingAgent(session={self.session.session_id}, tools={tools})"
 
+    def _extract_text_from_message(self, message) -> str:
+        """
+        Extract text content from Claude SDK message objects.
+
+        Args:
+            message: Message object from Claude SDK
+
+        Returns:
+            str: Extracted text content, or empty string if no text content
+        """
+        # Handle AssistantMessage which contains content blocks
+        if isinstance(message, AssistantMessage):
+            text_parts = []
+            for block in message.content:
+                if isinstance(block, TextBlock):
+                    text_parts.append(block.text)
+            return "".join(text_parts)
+
+        # For other message types, return empty string
+        return ""
+
     def _build_system_prompt(self, custom_instructions: Optional[str] = None) -> str:
         """
         Build the system prompt for the agent.
@@ -219,10 +241,12 @@ When searching or fetching web content:
             tool_uses = {"WebSearch": 0, "WebFetch": 0}
 
             async for message in query(prompt=prompt, options=options):
-                message_str = str(message)
+                # Extract text content from the message
+                text_content = self._extract_text_from_message(message)
 
-                # Track tool usage from messages
-                if "WebSearch" in message_str:
+                # Track tool usage by checking the raw message for tool blocks
+                message_str = str(message)
+                if "WebSearch" in message_str and "WebSearch" not in response_text:
                     self.session.record_search()
                     tool_uses["WebSearch"] += 1
                     self.logger.log_tool_use(
@@ -231,7 +255,7 @@ When searching or fetching web content:
                         session_id=self.session.session_id,
                     )
 
-                if "WebFetch" in message_str:
+                if "WebFetch" in message_str and "WebFetch" not in response_text:
                     self.session.record_fetch()
                     tool_uses["WebFetch"] += 1
                     self.logger.log_tool_use(
@@ -240,9 +264,10 @@ When searching or fetching web content:
                         session_id=self.session.session_id,
                     )
 
-                # Yield the message
-                response_text += message_str
-                yield message_str
+                # Only yield and accumulate if there's actual text content
+                if text_content:
+                    response_text += text_content
+                    yield text_content
 
             # Record the complete response
             self.session.add_message("assistant", response_text)

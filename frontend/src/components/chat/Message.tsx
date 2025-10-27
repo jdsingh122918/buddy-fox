@@ -13,6 +13,7 @@ interface MessageProps {
 
 export const Message: React.FC<MessageProps> = ({ message }) => {
   const isUser = message.role === 'user';
+  const isStreaming = message.id === 'streaming';
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
@@ -23,6 +24,11 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
             <span className="text-sm font-semibold">
               {isUser ? 'You' : 'Buddy Fox'}
             </span>
+            {isStreaming && (
+              <Badge variant="outline" className="text-xs animate-pulse">
+                Thinking...
+              </Badge>
+            )}
             {message.metadata?.toolsUsed && message.metadata.toolsUsed.length > 0 && (
               <div className="flex gap-1 ml-auto">
                 {message.metadata.toolsUsed.map((tool, idx) => (
@@ -54,6 +60,13 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
               >
                 {message.content}
               </ReactMarkdown>
+              {isStreaming && message.content === '' && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="animate-pulse">●</div>
+                  <div className="animate-pulse delay-75">●</div>
+                  <div className="animate-pulse delay-150">●</div>
+                </div>
+              )}
             </div>
           )}
 

@@ -27,8 +27,8 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   }
 
   return (
-    <ScrollArea className="flex-1 pr-4">
-      <div className="space-y-4">
+    <ScrollArea className="h-full w-full">
+      <div className="space-y-4 pr-4">
         {messages.map((message) => (
           <Message key={message.id} message={message} />
         ))}

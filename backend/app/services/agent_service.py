@@ -88,34 +88,21 @@ class AgentService:
                 "status": "started",
             }
 
-            # Track tool usage
-            last_content = ""
+            # Track tool usage and accumulate response
+            accumulated_response = ""
 
-            async for chunk in agent.query(query):
-                chunk_str = str(chunk)
-
-                # Detect tool usage
-                if "WebSearch" in chunk_str and "WebSearch" not in last_content:
-                    yield {
-                        "type": "tool",
-                        "tool": "WebSearch",
-                        "status": "started",
-                    }
-
-                if "WebFetch" in chunk_str and "WebFetch" not in last_content:
-                    yield {
-                        "type": "tool",
-                        "tool": "WebFetch",
-                        "status": "started",
-                    }
+            async for text_chunk in agent.query(query):
+                # The agent.query() now yields clean text content strings
+                # Detect tool usage from accumulated text (tools are tracked in agent logs)
+                # We rely on agent's internal tool tracking rather than parsing output
 
                 # Yield text chunk
-                yield {
-                    "type": "text",
-                    "content": chunk_str,
-                }
-
-                last_content = chunk_str
+                if text_chunk:
+                    yield {
+                        "type": "text",
+                        "content": text_chunk,
+                    }
+                    accumulated_response += text_chunk
 
             # Yield completion event with stats
             stats = agent.get_session_info()
