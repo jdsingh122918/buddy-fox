@@ -1,0 +1,77 @@
+version: '3.8'
+
+# Production docker-compose without volume mounts
+# Run with: docker-compose -f docker-compose.prod.yml up -d
+
+services:
+  # Backend API service (production)
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: buddy-fox-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MAX_WEB_SEARCHES=${MAX_WEB_SEARCHES:-10}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5-20250929}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+      - LOG_TO_CONSOLE=${LOG_TO_CONSOLE:-true}
+      - ALLOWED_DOMAINS=${ALLOWED_DOMAINS:-}
+      - BLOCKED_DOMAINS=${BLOCKED_DOMAINS:-}
+    # No volume mounts in production
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - buddy-fox-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Frontend UI service (production)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: buddy-fox-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - buddy-fox-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  buddy-fox-network:
+    driver: bridge
+    name: buddy-fox-network

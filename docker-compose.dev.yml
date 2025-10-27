@@ -1,0 +1,71 @@
+version: '3.8'
+
+# Development docker-compose with hot-reload support
+# Run with: docker-compose -f docker-compose.dev.yml up
+
+services:
+  # Backend API service with hot-reload
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: buddy-fox-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MAX_WEB_SEARCHES=${MAX_WEB_SEARCHES:-10}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-5-20250929}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - LOG_FORMAT=${LOG_FORMAT:-text}
+      - LOG_TO_CONSOLE=${LOG_TO_CONSOLE:-true}
+      - ALLOWED_DOMAINS=${ALLOWED_DOMAINS:-}
+      - BLOCKED_DOMAINS=${BLOCKED_DOMAINS:-}
+    volumes:
+      # Mount source code for hot-reload
+      - ./backend/app:/app/backend/app
+      - ./src:/app/src
+    command: ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - buddy-fox-network
+
+  # Frontend UI service with Vite dev server
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: buddy-fox-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      # Mount source code for hot-reload
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      # Don't mount node_modules
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - buddy-fox-network
+
+networks:
+  buddy-fox-network:
+    driver: bridge
+    name: buddy-fox-network-dev

@@ -156,22 +156,89 @@ config = AgentConfig(
 agent = WebBrowsingAgent(config=config)
 ```
 
+## Docker Deployment
+
+Buddy Fox includes a full-stack web UI with Docker support for easy deployment.
+
+### Quick Start with Docker
+
+```bash
+# 1. Copy environment file
+cp .env.example .env
+
+# 2. Add your Anthropic API key to .env
+# ANTHROPIC_API_KEY=your_api_key_here
+
+# 3. Build and start services
+docker-compose up --build
+
+# Or use the Makefile
+make up
+```
+
+Access the application:
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+
+### Docker Commands
+
+```bash
+# Development mode (with hot-reload)
+make dev
+# or
+docker-compose -f docker-compose.dev.yml up
+
+# Production mode
+make prod
+# or
+docker-compose -f docker-compose.prod.yml up -d
+
+# View logs
+make logs
+
+# Stop services
+make down
+
+# Clean everything
+make clean
+```
+
+For detailed Docker documentation, see [DOCKER.md](DOCKER.md).
+
 ## Project Structure
 
 ```
 buddy-fox/
-├── src/
+├── backend/              # FastAPI backend
+│   ├── app/
+│   │   ├── api/         # API endpoints
+│   │   ├── models/      # Pydantic models
+│   │   └── services/    # Agent service
+│   ├── Dockerfile       # Backend Docker image
+│   └── requirements.txt
+├── frontend/            # React frontend
+│   ├── src/
+│   │   ├── components/  # UI components
+│   │   ├── hooks/       # React hooks
+│   │   └── lib/         # Utilities
+│   ├── Dockerfile       # Frontend Docker image
+│   └── package.json
+├── src/                 # Core agent library
 │   ├── __init__.py      # Package exports
 │   ├── agent.py         # Core agent implementation
 │   ├── config.py        # Configuration management
 │   └── tools.py         # Tool definitions
-├── examples/
+├── examples/            # Usage examples
 │   ├── simple_search.py # Basic search example
 │   ├── url_analyzer.py  # URL analysis example
 │   └── research_task.py # Research example
 ├── main.py              # CLI interface
+├── docker-compose.yml   # Docker orchestration
+├── Makefile             # Docker shortcuts
 ├── pyproject.toml       # Project dependencies
 ├── .env.example         # Environment template
+├── DOCKER.md            # Docker documentation
 └── README.md            # This file
 ```
 

@@ -41,6 +41,12 @@ async def event_generator(query: str, session_id: str = None) -> AsyncIterator[s
         yield f"data: {json.dumps(error_event)}\n\n"
 
 
+@router.options("")
+async def query_options():
+    """Handle CORS preflight requests."""
+    return {"status": "ok"}
+
+
 @router.post("")
 async def query_agent(request: QueryRequest):
     """
