@@ -1,0 +1,18 @@
+[project]
+name = "buddy-fox"
+version = "0.1.0"
+description = "AI agent that can browse the web using Claude Agent SDK"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "claude-agent-sdk>=0.1.0",
+    "anthropic>=0.40.0",
+    "anyio>=4.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
