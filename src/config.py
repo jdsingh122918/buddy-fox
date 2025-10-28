@@ -51,6 +51,12 @@ class AgentConfig:
     transcription_language: str = "en"
     max_audio_duration_seconds: int = 3600
 
+    # Browser Capture Configuration
+    enable_browser_capture: bool = True
+    browser_headless: bool = True
+    browser_timeout_seconds: int = 30
+    browser_max_instances: int = 5
+
     @classmethod
     def from_env(cls) -> "AgentConfig":
         """
@@ -99,6 +105,11 @@ class AgentConfig:
             transcription_chunk_size_ms=int(os.getenv("TRANSCRIPTION_CHUNK_SIZE_MS", "1000")),
             transcription_language=os.getenv("TRANSCRIPTION_LANGUAGE", "en"),
             max_audio_duration_seconds=int(os.getenv("MAX_AUDIO_DURATION_SECONDS", "3600")),
+            # Browser capture settings
+            enable_browser_capture=os.getenv("ENABLE_BROWSER_CAPTURE", "true").lower() == "true",
+            browser_headless=os.getenv("BROWSER_HEADLESS", "true").lower() == "true",
+            browser_timeout_seconds=int(os.getenv("BROWSER_TIMEOUT_SECONDS", "30")),
+            browser_max_instances=int(os.getenv("BROWSER_MAX_INSTANCES", "5")),
         )
 
     def get_allowed_tools(self) -> list[str]:

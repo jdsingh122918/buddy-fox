@@ -98,6 +98,20 @@ class WebcastTranscriptionRequest(BaseModel):
     session_id: Optional[str] = Field(None, description="Optional session ID")
     language: Optional[str] = Field("en", description="Language code for transcription")
 
+    # Browser automation options (MVP: navigate + play, still use microphone)
+    use_browser_automation: bool = Field(
+        True,
+        description="Use headless browser to navigate and start playback automatically"
+    )
+    auto_play: bool = Field(
+        True,
+        description="Automatically detect and click play button"
+    )
+    browser_headless: bool = Field(
+        True,
+        description="Run browser in headless mode (no visible window)"
+    )
+
 
 class TranscriptionChunk(BaseModel):
     """Single transcription chunk."""
