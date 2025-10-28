@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from . import __version__
-from .api import query, session, stats
+from .api import query, session, stats, webcast
 
 # Configure logging
 logging.basicConfig(
@@ -31,22 +31,24 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Vite default
-        "http://localhost:5174",  # Alternative Vite port
-        "http://localhost:3000",  # Alternative frontend port
+        "http://localhost:3000",  # Primary frontend port
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite default (backup)
+        "http://localhost:5174",  # Alternative Vite port (backup)
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
-        "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Include routers
 app.include_router(query.router, prefix="/api")
 app.include_router(session.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
+app.include_router(webcast.router)
 
 
 @app.get("/")

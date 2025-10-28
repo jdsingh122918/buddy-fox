@@ -44,6 +44,13 @@ class AgentConfig:
     enable_bash: bool = False  # Disabled by default for security
     enable_file_ops: bool = False  # Disabled by default for security
 
+    # Transcription Configuration
+    assemblyai_api_key: Optional[str] = None
+    enable_transcription: bool = False
+    transcription_chunk_size_ms: int = 1000
+    transcription_language: str = "en"
+    max_audio_duration_seconds: int = 3600
+
     @classmethod
     def from_env(cls) -> "AgentConfig":
         """
@@ -86,6 +93,12 @@ class AgentConfig:
             enable_web_fetch=os.getenv("ENABLE_WEB_FETCH", "true").lower() == "true",
             enable_bash=os.getenv("ENABLE_BASH", "false").lower() == "true",
             enable_file_ops=os.getenv("ENABLE_FILE_OPS", "false").lower() == "true",
+            # Transcription settings
+            assemblyai_api_key=os.getenv("ASSEMBLYAI_API_KEY"),
+            enable_transcription=os.getenv("ENABLE_TRANSCRIPTION", "false").lower() == "true",
+            transcription_chunk_size_ms=int(os.getenv("TRANSCRIPTION_CHUNK_SIZE_MS", "1000")),
+            transcription_language=os.getenv("TRANSCRIPTION_LANGUAGE", "en"),
+            max_audio_duration_seconds=int(os.getenv("MAX_AUDIO_DURATION_SECONDS", "3600")),
         )
 
     def get_allowed_tools(self) -> list[str]:

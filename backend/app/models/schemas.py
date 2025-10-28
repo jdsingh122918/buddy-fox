@@ -87,3 +87,48 @@ class ErrorResponse(BaseModel):
     error: str
     detail: Optional[str] = None
     session_id: Optional[str] = None
+
+
+# Transcription Models
+
+class WebcastTranscriptionRequest(BaseModel):
+    """Request model for webcast transcription."""
+
+    webcast_url: str = Field(..., min_length=1, description="URL of the webcast to transcribe")
+    session_id: Optional[str] = Field(None, description="Optional session ID")
+    language: Optional[str] = Field("en", description="Language code for transcription")
+
+
+class TranscriptionChunk(BaseModel):
+    """Single transcription chunk."""
+
+    text: str
+    confidence: float
+    is_final: bool
+    timestamp: float
+    audio_start: Optional[float] = None
+    audio_end: Optional[float] = None
+
+
+class TranscriptionEvent(BaseModel):
+    """Server-Sent Event for transcription."""
+
+    type: str  # "session_started", "browser_ready", "audio_started", "transcription", "error", "complete"
+    message: Optional[str] = None
+    session_id: Optional[str] = None
+    webcast_url: Optional[str] = None
+    transcription: Optional[TranscriptionChunk] = None
+    error: Optional[str] = None
+    summary: Optional[Dict[str, Any]] = None
+
+
+class TranscriptionSessionInfo(BaseModel):
+    """Information about a transcription session."""
+
+    session_id: str
+    webcast_url: str
+    started_at: datetime
+    status: str  # "starting", "active", "stopped", "error"
+    total_duration_seconds: float
+    chunks_transcribed: int
+    language: str

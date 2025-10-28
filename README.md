@@ -1,316 +1,262 @@
-# Buddy Fox
+# 🦊 Buddy Fox AI Web Browsing Agent
 
-An AI agent that can browse the web for you, powered by Claude and the Anthropic Agent SDK.
+An AI-powered web browsing agent with real-time webcast transcription capabilities.
 
 ## Features
 
-- **Web Search**: Search the web with intelligent query refinement
-- **Web Fetch**: Retrieve and analyze content from specific URLs
-- **Agentic Reasoning**: Claude autonomously decides when to search vs fetch
-- **Interactive Mode**: Chat-style interface for web browsing
-- **Session Management**: Track usage, history, and statistics
-- **Configurable Permissions**: Control which tools the agent can access
+- 🔍 **AI Web Browsing**: Intelligent web search and content analysis
+- 🎙️ **Real-time Transcription**: Live webcast transcription using AssemblyAI
+- 💬 **Chat Interface**: Interactive chat with the AI agent
+- 🌐 **Browser Integration**: Automated web navigation
+- 📊 **Session Management**: Track and manage conversation sessions
 
-## Installation
+---
+
+## Quick Start
 
 ### Prerequisites
 
 - Python 3.12+
-- UV package manager (recommended) or pip
-- Anthropic API key (get one at https://console.anthropic.com/)
+- Node.js 18+
+- npm or yarn
 
-### Setup
+### Installation
 
-1. Clone or navigate to the project:
+1. **Clone the repository**
    ```bash
+   git clone <repository-url>
    cd buddy-fox
    ```
 
-2. Install dependencies:
+2. **Install Python dependencies**
    ```bash
-   # Using UV (recommended)
-   uv pip install -e .
-
-   # Or using pip
-   pip install -e .
+   pip install -r requirements.txt
    ```
 
-3. Configure environment:
+3. **Install frontend dependencies**
    ```bash
-   # Copy the example environment file
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+4. **Configure environment variables**
+   
+   Copy `.env.example` to `.env` and add your API keys:
+   ```bash
    cp .env.example .env
-
-   # Edit .env and add your API key
-   # ANTHROPIC_API_KEY=your_api_key_here
+   ```
+   
+   Required environment variables:
+   ```bash
+   # Required
+   ANTHROPIC_API_KEY=your_anthropic_api_key
+   
+   # Optional - for transcription feature
+   ASSEMBLYAI_API_KEY=your_assemblyai_api_key
+   ENABLE_TRANSCRIPTION=true
+   TRANSCRIPTION_CHUNK_SIZE_MS=1000
    ```
 
-## Usage
+---
 
-### Interactive Mode
+## Running the Application
 
-Run the agent in interactive mode for chat-style conversations:
+### Option 1: Using the startup scripts (Recommended)
 
+**Terminal 1 - Backend:**
 ```bash
-python main.py
+./start-backend.sh
 ```
 
-Available commands:
-- Type any question to search and get answers
-- `stats` - View session statistics
-- `quit` or `exit` - End the session
-
-### Single Query Mode
-
-Run a single query from the command line:
-
+**Terminal 2 - Frontend:**
 ```bash
-python main.py "What are the latest developments in AI?"
+./start-frontend.sh
 ```
 
-### Example Scripts
+### Option 2: Manual start
 
-#### Simple Web Search
+**Terminal 1 - Backend:**
 ```bash
-python examples/simple_search.py
+cd backend
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-#### URL Analysis
+**Terminal 2 - Frontend:**
 ```bash
-python examples/url_analyzer.py https://example.com
+cd frontend
+npm run dev
 ```
 
-#### Research Task
-```bash
-python examples/research_task.py "Claude Agent SDK capabilities"
-```
+---
 
-## Programmatic Usage
+## Access the Application
 
-Use Buddy Fox in your own Python code:
+- **Frontend UI**: http://localhost:3000/
+- **Chat Interface**: http://localhost:3000/
+- **Webcast Transcriber**: http://localhost:3000/transcribe
+- **Backend API**: http://localhost:8000/
+- **API Documentation**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/api/health
 
-```python
-import asyncio
-from src import create_agent
-
-async def main():
-    # Create agent
-    agent = await create_agent()
-
-    # Simple query
-    async for chunk in agent.query("What's new in AI?"):
-        print(chunk, end="", flush=True)
-
-    # Web search
-    async for chunk in agent.search_web("Python async patterns", max_results=5):
-        print(chunk, end="", flush=True)
-
-    # Fetch and analyze URL
-    async for chunk in agent.fetch_and_analyze("https://example.com"):
-        print(chunk, end="", flush=True)
-
-    # Research topic
-    async for chunk in agent.research_topic("Machine learning trends", depth="deep"):
-        print(chunk, end="", flush=True)
-
-    # Get session stats
-    stats = agent.get_session_info()
-    print(stats)
-
-asyncio.run(main())
-```
-
-## Configuration
-
-Configuration is managed via environment variables in `.env`:
-
-### Required
-- `ANTHROPIC_API_KEY` - Your Anthropic API key
-
-### Optional
-- `CLAUDE_MODEL` - Model to use (default: `claude-sonnet-4-5-20250929`)
-- `MAX_WEB_SEARCHES` - Max searches per session (default: `10`)
-- `LOG_LEVEL` - Logging level (default: `INFO`)
-- `ALLOWED_DOMAINS` - Comma-separated list of allowed domains
-- `BLOCKED_DOMAINS` - Comma-separated list of blocked domains
-- `ENABLE_WEB_SEARCH` - Enable web search (default: `true`)
-- `ENABLE_WEB_FETCH` - Enable web fetch (default: `true`)
-- `ENABLE_BASH` - Enable bash commands (default: `false`)
-- `ENABLE_FILE_OPS` - Enable file operations (default: `false`)
-
-### Advanced Configuration
-
-For programmatic configuration:
-
-```python
-from src import AgentConfig, WebBrowsingAgent
-
-config = AgentConfig(
-    anthropic_api_key="your-key",
-    claude_model="claude-sonnet-4-5-20250929",
-    max_web_searches=20,
-    allowed_domains=["wikipedia.org", "github.com"],
-    enable_web_search=True,
-    enable_web_fetch=True,
-)
-
-agent = WebBrowsingAgent(config=config)
-```
-
-## Docker Deployment
-
-Buddy Fox includes a full-stack web UI with Docker support for easy deployment.
-
-### Quick Start with Docker
-
-```bash
-# 1. Copy environment file
-cp .env.example .env
-
-# 2. Add your Anthropic API key to .env
-# ANTHROPIC_API_KEY=your_api_key_here
-
-# 3. Build and start services
-docker-compose up --build
-
-# Or use the Makefile
-make up
-```
-
-Access the application:
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-
-### Docker Commands
-
-```bash
-# Development mode (with hot-reload)
-make dev
-# or
-docker-compose -f docker-compose.dev.yml up
-
-# Production mode
-make prod
-# or
-docker-compose -f docker-compose.prod.yml up -d
-
-# View logs
-make logs
-
-# Stop services
-make down
-
-# Clean everything
-make clean
-```
-
-For detailed Docker documentation, see [DOCKER.md](DOCKER.md).
+---
 
 ## Project Structure
 
 ```
 buddy-fox/
-├── backend/              # FastAPI backend
+├── backend/               # FastAPI backend
 │   ├── app/
-│   │   ├── api/         # API endpoints
-│   │   ├── models/      # Pydantic models
-│   │   └── services/    # Agent service
-│   ├── Dockerfile       # Backend Docker image
+│   │   ├── api/          # API endpoints
+│   │   ├── models/       # Pydantic models
+│   │   └── services/     # Business logic
 │   └── requirements.txt
-├── frontend/            # React frontend
+├── frontend/             # React frontend
 │   ├── src/
-│   │   ├── components/  # UI components
-│   │   ├── hooks/       # React hooks
-│   │   └── lib/         # Utilities
-│   ├── Dockerfile       # Frontend Docker image
+│   │   ├── components/   # React components
+│   │   ├── hooks/        # Custom hooks
+│   │   ├── pages/        # Page components
+│   │   └── lib/          # Utilities
 │   └── package.json
-├── src/                 # Core agent library
-│   ├── __init__.py      # Package exports
-│   ├── agent.py         # Core agent implementation
+├── src/                  # Core agent logic
+│   ├── agent.py         # Main agent implementation
 │   ├── config.py        # Configuration management
 │   └── tools.py         # Tool definitions
-├── examples/            # Usage examples
-│   ├── simple_search.py # Basic search example
-│   ├── url_analyzer.py  # URL analysis example
-│   └── research_task.py # Research example
-├── main.py              # CLI interface
-├── docker-compose.yml   # Docker orchestration
-├── Makefile             # Docker shortcuts
-├── pyproject.toml       # Project dependencies
-├── .env.example         # Environment template
-├── DOCKER.md            # Docker documentation
-└── README.md            # This file
+├── requirements.txt      # Root Python dependencies
+└── .env                 # Environment variables
 ```
 
-## Architecture
+---
 
-Buddy Fox is built on the Claude Agent SDK and provides:
+## Environment Variables
 
-1. **WebBrowsingAgent**: Main agent class with web browsing capabilities
-2. **AgentSession**: Session management with usage tracking
-3. **Tool Configurations**: WebSearch and WebFetch tool setup
-4. **Streaming Responses**: Real-time response display
-5. **Error Handling**: Robust error handling and retries
+### Core Configuration
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ANTHROPIC_API_KEY` | - | **Required**: Your Anthropic API key |
+| `CLAUDE_MODEL` | `claude-sonnet-4-5-20250929` | Claude model to use |
+| `MAX_WEB_SEARCHES` | `10` | Max web searches per session |
+
+### Transcription Configuration
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ASSEMBLYAI_API_KEY` | - | AssemblyAI API key (for transcription) |
+| `ENABLE_TRANSCRIPTION` | `false` | Enable transcription feature |
+| `TRANSCRIPTION_CHUNK_SIZE_MS` | `1000` | Audio chunk size in milliseconds |
+| `TRANSCRIPTION_LANGUAGE` | `en` | Language code for transcription |
+| `MAX_AUDIO_DURATION_SECONDS` | `3600` | Max transcription duration |
+
+### Logging Configuration
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_LEVEL` | `INFO` | Logging level |
+| `LOG_FORMAT` | `json` | Log format (json or text) |
+| `LOG_TO_CONSOLE` | `true` | Enable console logging |
+
+---
+
+## API Endpoints
+
+### Chat & Query
+- `POST /api/query` - Send query to agent (returns SSE stream)
+- `GET /api/session/{session_id}` - Get session info
+- `DELETE /api/session/{session_id}` - Delete session
+- `GET /api/sessions` - List all sessions
+
+### Webcast Transcription
+- `POST /api/webcast/transcribe` - Start transcription (returns SSE stream)
+- `WebSocket /api/webcast/audio/{session_id}` - Upload audio chunks
+- `GET /api/webcast/session/{session_id}` - Get transcription session info
+- `DELETE /api/webcast/session/{session_id}` - Stop transcription
+- `GET /api/webcast/sessions` - List active transcription sessions
+
+### System
+- `GET /` - API information
+- `GET /api/health` - Health check
+- `GET /api/stats` - Usage statistics
+
+---
+
+## Troubleshooting
+
+### Module Not Found Error
+
+If you see `ModuleNotFoundError: No module named 'claude_agent_sdk'`:
+
+```bash
+# Install all dependencies
+pip install -r requirements.txt
+```
+
+### Port Already in Use
+
+If ports 3000 or 8000 are already in use:
+
+```bash
+# Find and kill processes on ports
+lsof -ti:8000 | xargs kill -9
+lsof -ti:3000 | xargs kill -9
+```
+
+### CORS Issues
+
+The backend is configured to accept requests from `localhost:3000`. If you change the frontend port, update `backend/app/main.py` CORS settings.
+
+---
 
 ## Development
 
 ### Running Tests
 ```bash
+# Backend tests
+cd backend
 pytest
+
+# Frontend tests
+cd frontend
+npm test
 ```
 
-### Code Style
+### Code Formatting
 ```bash
-# Format code
-black src/ examples/
+# Python
+black .
+ruff check .
 
-# Lint
-ruff check src/ examples/
+# TypeScript
+cd frontend
+npm run lint
 ```
-
-## Use Cases
-
-- **Research**: Gather information from multiple sources
-- **News Aggregation**: Find recent news on topics
-- **Content Analysis**: Analyze web pages and documents
-- **Fact Checking**: Verify claims across sources
-- **Market Research**: Compare products, prices, and features
-- **Documentation Lookup**: Find technical documentation
-
-## Limitations
-
-- Web search has usage limits (configurable via `MAX_WEB_SEARCHES`)
-- Some websites may block automated access
-- Rate limiting may apply based on your API plan
-- Search results depend on search engine availability
-
-## Contributing
-
-This is a project built with Claude Code. Feel free to extend it with:
-- Additional tools (e.g., PDF parsing, data extraction)
-- Custom search strategies
-- Result caching
-- Multi-source fact checking
-- And more!
-
-## License
-
-See LICENSE file for details.
-
-## Support
-
-For issues with:
-- **Claude Agent SDK**: See official docs at https://docs.anthropic.com/en/api/agent-sdk/overview
-- **Anthropic API**: Contact Anthropic support at https://support.anthropic.com/
-- **This project**: Open an issue in the repository
-
-## Acknowledgments
-
-Built with:
-- Claude by Anthropic
-- Claude Agent SDK
-- Claude Code
 
 ---
 
-Made with love and AI
+## Docker Support
+
+```bash
+# Development
+docker-compose -f docker-compose.dev.yml up
+
+# Production
+docker-compose -f docker-compose.prod.yml up
+```
+
+---
+
+## License
+
+MIT License - See LICENSE file for details
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+## Support
+
+For issues and questions, please open an issue on GitHub.

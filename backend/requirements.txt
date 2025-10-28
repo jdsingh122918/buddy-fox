@@ -12,3 +12,8 @@ python-multipart>=0.0.6
 
 # Additional dependencies
 # (Main project dependencies will be reused since backend imports from src/)
+# Install all dependencies from root: pip install -r ../requirements.txt
+
+# Transcription services (already included in root requirements.txt)
+# assemblyai>=0.17.0
+# websockets>=12.0
